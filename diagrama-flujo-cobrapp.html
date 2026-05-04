@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flujo de Trabajo CobrApp</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #15233b;
+      --muted: #64748b;
+      --line: #9fb0c7;
+      --telegram: #229ed9;
+      --n8n: #ea4b71;
+      --python: #2f6fed;
+      --ocr: #6f42c1;
+      --excel: #1f8f4d;
+      --report: #f59e0b;
+      --danger: #dc2626;
+      --shadow: 0 16px 42px rgba(21, 35, 59, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .page {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-end;
+      padding-bottom: 16px;
+      margin-bottom: 22px;
+      border-bottom: 3px solid var(--ink);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .canvas {
+      background: var(--panel);
+      border: 1px solid #d8e2ee;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .main-flow {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr 48px 1fr 48px 1fr;
+      align-items: center;
+      gap: 0;
+    }
+
+    .card {
+      min-height: 164px;
+      border: 2px solid #d7e1ee;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+      position: relative;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .telegram .icon {
+      background: var(--telegram);
+    }
+
+    .n8n .icon {
+      background: var(--n8n);
+    }
+
+    .api .icon {
+      background: var(--python);
+    }
+
+    .storage .icon {
+      background: var(--excel);
+    }
+
+    .arrow {
+      height: 2px;
+      background: var(--line);
+      margin: 0 10px;
+      position: relative;
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -1px;
+      width: 11px;
+      height: 11px;
+      border-top: 2px solid var(--line);
+      border-right: 2px solid var(--line);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .section-title {
+      margin: 28px 0 12px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .n8n-flow {
+      border: 2px solid #f2a6b9;
+      background: #fff7fa;
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .step {
+      background: #fff;
+      border: 1px solid #e5cfda;
+      border-top: 5px solid var(--n8n);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 132px;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.38;
+    }
+
+    .api-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .panel {
+      border: 1px solid #d8e2ee;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+    }
+
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .panel p,
+    .panel li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .endpoint {
+      display: block;
+      background: #101827;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .branch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .branch {
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 146px;
+      border: 1px solid #d8e2ee;
+      background: #fff;
+    }
+
+    .branch.ok {
+      border-top: 5px solid var(--excel);
+    }
+
+    .branch.warn {
+      border-top: 5px solid var(--danger);
+    }
+
+    .branch h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .branch p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .report-row {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr 48px 1fr;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .mini {
+      min-height: 126px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 980px) {
+      .header {
+        display: block;
+      }
+
+      .badge {
+        margin-top: 14px;
+      }
+
+      .main-flow,
+      .report-row {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .arrow {
+        width: 2px;
+        height: 38px;
+        margin: 0 auto;
+      }
+
+      .arrow::after {
+        top: auto;
+        right: auto;
+        left: 50%;
+        bottom: -1px;
+        transform: translateX(-50%) rotate(135deg);
+      }
+
+      .steps,
+      .api-grid,
+      .branch-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <h1>Flujo de Trabajo CobrApp</h1>
+        <p class="subtitle">Registro automatico de pagos Yape o Plin con Telegram, n8n y Python OCR</p>
+      </div>
+      <div class="badge"><span class="status-dot"></span> Automatizacion activa con Telegram</div>
+    </header>
+
+    <section class="canvas">
+      <div class="main-flow">
+        <article class="card telegram">
+          <div class="icon">1</div>
+          <h2>Usuario envia captura</h2>
+          <p>El cliente envia una imagen de Yape o Plin al grupo de Telegram del negocio.</p>
+          <ul>
+            <li>Foto del comprobante</li>
+            <li>Grupo de pagos</li>
+            <li>Bot agregado al grupo</li>
+          </ul>
+        </article>
+
+        <div class="arrow" aria-hidden="true"></div>
+
+        <article class="card n8n">
+          <div class="icon">2</div>
+          <h2>n8n recibe el evento</h2>
+          <p>El nodo Telegram Trigger escucha el grupo y detecta si el mensaje trae una imagen.</p>
+          <ul>
+            <li>Valida foto o documento</li>
+            <li>Obtiene el file_id</li>
+            <li>Descarga la imagen</li>
+          </ul>
+        </article>
+
+        <div class="arrow" aria-hidden="true"></div>
+
+        <article class="card api">
+          <div class="icon">3</div>
+          <h2>API Python procesa OCR</h2>
+          <p>n8n envia la imagen a FastAPI. Python mejora la imagen y extrae texto con Tesseract OCR.</p>
+          <ul>
+            <li>OpenCV preprocesa</li>
+            <li>pytesseract lee texto</li>
+            <li>Regex extrae datos</li>
+          </ul>
+        </article>
+
+        <div class="arrow" aria-hidden="true"></div>
+
+        <article class="card storage">
+          <div class="icon">4</div>
+          <h2>Registro y respuesta</h2>
+          <p>La API registra el pago en Excel y n8n envia una confirmacion automatica al grupo.</p>
+          <ul>
+            <li>Guarda en pagos.xlsx</li>
+            <li>Detecta duplicados</li>
+            <li>Confirma por Telegram</li>
+          </ul>
+        </article>
+      </div>
+
+      <h2 class="section-title">Flujo interno en n8n</h2>
+      <section class="n8n-flow">
+        <div class="steps">
+          <div class="step">
+            <strong>Telegram Trigger</strong>
+            <span>Recibe el mensaje enviado al grupo de Telegram.</span>
+          </div>
+          <div class="step">
+            <strong>IF - Tiene imagen</strong>
+            <span>Comprueba si el mensaje contiene una foto o imagen como documento.</span>
+          </div>
+          <div class="step">
+            <strong>Descargar imagen</strong>
+            <span>Usa el file_id para obtener el archivo real desde Telegram.</span>
+          </div>
+          <div class="step">
+            <strong>HTTP - OCR</strong>
+            <span>Envia el binario a la API FastAPI mediante multipart/form-data.</span>
+          </div>
+          <div class="step">
+            <strong>IF - Pago valido</strong>
+            <span>Evalua si la API encontro monto, tipo y numero de operacion.</span>
+          </div>
+          <div class="step">
+            <strong>Confirmar pago</strong>
+            <span>Responde al grupo con nombre, monto, tipo, operacion y estado.</span>
+          </div>
+          <div class="step">
+            <strong>Imagen invalida</strong>
+            <span>Informa al grupo cuando no se pudo reconocer un pago valido.</span>
+          </div>
+        </div>
+      </section>
+
+      <h2 class="section-title">Procesamiento en la API Python</h2>
+      <div class="api-grid">
+        <section class="panel">
+          <h3>Endpoint principal</h3>
+          <code class="endpoint">POST /procesar-imagen
+Content-Type: multipart/form-data
+Campo: file</code>
+        </section>
+        <section class="panel">
+          <h3>Datos extraidos</h3>
+          <ul>
+            <li>Fecha y hora</li>
+            <li>Nombre del pagador</li>
+            <li>Monto en soles</li>
+            <li>Tipo: Yape o Plin</li>
+            <li>Numero de operacion</li>
+          </ul>
+        </section>
+        <section class="panel">
+          <h3>Almacenamiento</h3>
+          <p>Los datos se guardan en <strong>pagos/pagos.xlsx</strong> con estado Registrado, Duplicado, No registrado o Excel bloqueado.</p>
+        </section>
+      </div>
+
+      <div class="branch-grid">
+        <section class="branch ok">
+          <h3>Pago valido</h3>
+          <p>Si la API detecta datos suficientes, registra el pago en Excel. Luego n8n envia una confirmacion al grupo con el resumen del comprobante.</p>
+        </section>
+        <section class="branch warn">
+          <h3>Pago invalido o duplicado</h3>
+          <p>Si faltan datos o la imagen no corresponde a un pago, se informa al grupo. Si el numero de operacion ya existe, se marca como duplicado.</p>
+        </section>
+      </div>
+
+      <h2 class="section-title">Reporte diario</h2>
+      <div class="report-row">
+        <article class="card mini n8n">
+          <div class="icon">A</div>
+          <h2>Schedule Trigger</h2>
+          <p>n8n ejecuta el flujo de reporte a una hora programada.</p>
+        </article>
+
+        <div class="arrow" aria-hidden="true"></div>
+
+        <article class="card mini api">
+          <div class="icon">B</div>
+          <h2>GET /reporte</h2>
+          <p>FastAPI calcula pagos del dia y total recaudado desde el Excel.</p>
+        </article>
+
+        <div class="arrow" aria-hidden="true"></div>
+
+        <article class="card mini telegram">
+          <div class="icon">C</div>
+          <h2>Telegram envia resumen</h2>
+          <p>El bot publica en el grupo la cantidad de pagos y el total del dia.</p>
+        </article>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item"><span class="swatch" style="background: var(--telegram)"></span> Telegram</span>
+        <span class="legend-item"><span class="swatch" style="background: var(--n8n)"></span> n8n</span>
+        <span class="legend-item"><span class="swatch" style="background: var(--python)"></span> FastAPI Python</span>
+        <span class="legend-item"><span class="swatch" style="background: var(--ocr)"></span> OCR</span>
+        <span class="legend-item"><span class="swatch" style="background: var(--excel)"></span> Excel</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

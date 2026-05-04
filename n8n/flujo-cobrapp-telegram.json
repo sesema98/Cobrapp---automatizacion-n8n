@@ -1,0 +1,305 @@
+{
+  "name": "CobrApp - Registro automatico de pagos Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ Boolean($json.message?.photo?.length || ($json.message?.document?.mime_type || '').startsWith('image/')) }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-hay-imagen",
+      "name": "IF - Tiene imagen",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message?.photo?.length ? $json.message.photo[$json.message.photo.length - 1].file_id : $json.message.document.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "descargar-imagen",
+      "name": "Telegram - Descargar imagen",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        200
+      ],
+      "webhookId": "telegram-download-image",
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://python-api:8000/procesar-imagen",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "api-ocr",
+      "name": "HTTP - Procesar OCR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.valido }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-pago-valido",
+      "name": "IF - Pago valido",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ Pago registrado\nNombre: {{$json.nombre}}\nMonto: S/. {{$json.monto}}\nTipo: {{$json.tipo}}\nOperacion: {{$json.operacion}}\nEstado: {{$json.estado}}",
+        "additionalFields": {}
+      },
+      "id": "confirmar-pago",
+      "name": "Telegram - Confirmar pago",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1580,
+        120
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=⚠️ No pude registrar esta imagen como pago. Revisa que la captura sea de Yape o Plin y que se vea el monto y numero de operacion.",
+        "additionalFields": {}
+      },
+      "id": "mensaje-invalido",
+      "name": "Telegram - Imagen invalida",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1580,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "59 23 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-reporte",
+      "name": "Schedule - Reporte diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://python-api:8000/reporte",
+        "options": {}
+      },
+      "id": "obtener-reporte",
+      "name": "HTTP - Obtener reporte",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "REEMPLAZAR_CHAT_ID",
+        "text": "=📊 Reporte diario {{$json.fecha}}\nPagos registrados: {{$json.cantidad_pagos}}\nTotal recaudado: S/. {{$json.total_recaudado}}",
+        "additionalFields": {}
+      },
+      "id": "enviar-reporte",
+      "name": "Telegram - Enviar reporte",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        780,
+        620
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF - Tiene imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Tiene imagen": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Descargar imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Descargar imagen": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Procesar OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Procesar OCR": {
+      "main": [
+        [
+          {
+            "node": "IF - Pago valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Pago valido": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Confirmar pago",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Imagen invalida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Reporte diario": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Obtener reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Obtener reporte": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Enviar reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Lima"
+  },
+  "active": false,
+  "pinData": {},
+  "versionId": "1"
+}

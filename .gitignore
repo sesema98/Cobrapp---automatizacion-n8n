@@ -1,0 +1,21 @@
+# Local secrets and environment files
+.env
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# n8n exports with local credential IDs or personal workspace data
+n8n/workflows-final-export.json
+
+# Local payment data
+pagos/*.xlsx
+!pagos/.gitkeep
+
+# Temporary and OS files
+*.log
+tmp/
+temp/
+.DS_Store
+Thumbs.db

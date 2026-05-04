@@ -1,0 +1,36 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: cobrapp-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL:-http://localhost:5678/}
+      - TZ=America/Lima
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - python-api
+
+  python-api:
+    build: ./python-api
+    container_name: cobrapp-python-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PAGOS_DIR=/app/pagos
+      - TZ=America/Lima
+    volumes:
+      - ./pagos:/app/pagos
+
+volumes:
+  n8n_data:
