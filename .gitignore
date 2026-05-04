@@ -8,6 +8,8 @@
 
 # n8n exports with local credential IDs or personal workspace data
 n8n/workflows-final-export.json
+n8n/workflows-debug-export.json
+n8n-database-copy.sqlite*
 
 # Local payment data
 pagos/*.xlsx

@@ -159,6 +159,37 @@ def buscar_monto(texto: str) -> str | None:
         if match:
             return match.group(1).replace(",", ".")
 
+    texto_normalizado = normalizar_texto(texto)
+    if "yapeaste" in texto_normalizado or "plin" in texto_normalizado:
+        lineas = [linea.strip() for linea in texto.splitlines() if linea.strip()]
+
+        for linea in lineas:
+            linea_limpia = re.sub(r"\s+", "", linea)
+            if not re.search(r"^[sS][^0-9]{0,3}[0-9]", linea_limpia):
+                continue
+
+            digitos = re.sub(r"\D", "", linea_limpia)
+            if len(digitos) == 3 and digitos.startswith("1"):
+                return digitos[1:]
+            if 1 <= len(digitos) <= 4:
+                return digitos
+
+        for indice, linea in enumerate(lineas):
+            if "yapeaste" not in normalizar_texto(linea) and "plin" not in normalizar_texto(linea):
+                continue
+
+            for posible_monto in lineas[indice + 1 : indice + 5]:
+                if re.search(r"(fecha|hora|codigo|seguridad|datos|transaccion|operacion|celular|destino)", normalizar_texto(posible_monto)):
+                    break
+
+                digitos = re.sub(r"\D", "", posible_monto)
+                if not re.fullmatch(r"\D*\d{1,4}\D*", posible_monto) or not digitos:
+                    continue
+
+                if len(digitos) == 3 and digitos.startswith("1"):
+                    return digitos[1:]
+                return digitos
+
     return None
 
 
